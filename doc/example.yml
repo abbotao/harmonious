@@ -1,0 +1,31 @@
+--- 
+    Name: Test the google front page
+    Description: 
+        This is a test plan to ensure the Google Front Page
+        works correctly.
+
+    Prerequisites:
+        SetupTasks:
+            - CreateTestUser
+        Execute: 
+            - LoginTestUser
+
+    Gloassary:
+        - LoginLink: id "gb_70"
+        - SearchBox: name "q"
+        - SubmitButton: name "btnK"
+        - ResultStats: id "resultStats"
+
+    Steps:
+        - Step 1:
+            - Load http://www.google.com
+            - Expect Page Loaded
+            - Expect Exists [LoginLink]
+            - Expect Exists [SearchBox]
+            - Expect Exists [SearchButton]
+        - Step 2:
+            - Type "Testing" into [SearchBox]
+            - Click [SubmitButton]
+            - Expect Page Loaded
+            - Expect Page Title is "Testing - Google Search"
+            - Expect [ResultStats] contains "About \d+ results"
