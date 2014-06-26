@@ -1,0 +1,5 @@
+---
+- name: Test Plan
+  environment: Firefox
+  tasks:
+    - TestGoogleFrontPage

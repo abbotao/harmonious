@@ -1,0 +1,23 @@
+--- 
+    Name: TestGoogleFrontPage
+    Description: 
+        This is a test plan to ensure the Google Front Page
+        works correctly.
+
+    Glossary:
+        - LoginLink: "#gb_70"
+        - SearchBox: "[name='q']"
+        - SubmitButton: "[name='btnG']"
+        - ResultStats: "#resultStats"
+
+    Steps:
+        - Step 1:
+            - Load http://www.google.com
+            - Expect Exists [LoginLink]
+            - Expect Exists [SearchBox]
+        - Step 2:
+            - Type "Testing" into [SearchBox]
+            - Click [SubmitButton]
+            - Wait 0.5 seconds
+            - Expect Page Title is "Testing - Google Search"
+            - Expect [ResultStats] contains "About (\d+,)+\d+ results"
