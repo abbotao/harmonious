@@ -1,13 +1,10 @@
 from collections import defaultdict
 from selenium import webdriver
 
-from harmonious.registries import StepRegistry
+from harmonious.registries import DIRECTIVE_REGISTRY, TASK_REGISTRY
 from harmonious.parsers import unquote_variable, is_substitution
 
 from harmonious.exceptions import ImmutableAccessError, StepReturnedFalseError, DirectionUsesReservedWordError
-
-STEP_REGISTRY = StepRegistry()
-TASK_REGISTRY = defaultdict(lambda: None)
 
 ENVIRONMENT_MAPPING = { 
     'ie': webdriver.Ie, 
@@ -113,7 +110,7 @@ class TestPlan(object):
     def __init__(self, name):
         self.name = None
         self.tasks = None
-        self.environment = None
+        self.environment = None #TODO: we should allow more details here than just browser named...
         self.variables = Variables()
 
     def dependency_order(self):
@@ -167,7 +164,7 @@ class Step(object):
     def run(self, browser, glossary):
         for direction in self.directions:
             print "  -",direction,
-            for (regexp, func) in STEP_REGISTRY.iteritems():
+            for (regexp, func) in DIRECTIVE_REGISTRY.iteritems():
                 match = regexp.search(direction)
                 if match:
                     #Remove quotes around strings as needed,

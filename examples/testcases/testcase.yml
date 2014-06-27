@@ -19,7 +19,7 @@
         - Step 2:
             - Type "Testing" into [SearchBox]
             - Click [SubmitButton]
-            - Wait 0.5 seconds
+            - Wait 1 seconds
             - Expect Page Title is "Testing - Google Search"
             - Expect [ResultStats] contains "results"
             - Expect [Andrew] to not exist

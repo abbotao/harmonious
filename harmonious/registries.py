@@ -1,5 +1,9 @@
 import re
+from collections import defaultdict
 
-class StepRegistry(dict):
-    def add_step(self, regexp, step_func):
-        self[re.compile(regexp, flags=re.IGNORECASE)] = step_func
+class DirectiveRegistry(dict):
+    def add_directive(self, regexp, dir_func):
+        self[re.compile(regexp, flags=re.IGNORECASE)] = dir_func
+
+DIRECTIVE_REGISTRY = DirectiveRegistry()
+TASK_REGISTRY = defaultdict(lambda: None)
