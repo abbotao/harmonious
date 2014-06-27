@@ -2,8 +2,9 @@ from collections import defaultdict
 from selenium import webdriver
 
 from harmonious.registries import StepRegistry
+from harmonious.parsers import unquote_variable, is_substitution
 
-from harmonious.exceptions import ImmutableAccessError, StepReturnedFalseError
+from harmonious.exceptions import ImmutableAccessError, StepReturnedFalseError, DirectionUsesReservedWordError
 
 STEP_REGISTRY = StepRegistry()
 TASK_REGISTRY = defaultdict(lambda: None)
@@ -169,11 +170,19 @@ class Step(object):
             for (regexp, func) in STEP_REGISTRY.iteritems():
                 match = regexp.search(direction)
                 if match:
+                    #Remove quotes around strings as needed,
+                    #and substitute variables
                     kwargs = match.groupdict()
                     for (key, value) in kwargs.iteritems():
-                        if value[0] == "[" and value[-1] == "]":
-                            #if value[1:-1] not in glossary: we should do something here
-                            kwargs[key] = glossary[value[1:-1]]
+                            unquoted = unquote_variable(value)
+                            if is_substitution(value):
+                                kwargs[key] = glossary[unquoted]
+                            else:
+                                kwargs[key] = unquoted
+                    #browser is used internally, so let's throw a fit if we already have one
+                    if "browser" in kwargs:
+                        raise DirectionUsesReservedWordError("Direction uses 'browser' which is reserved.")
+
                     kwargs["browser"] = browser
                     try:
                         result = func(**kwargs)

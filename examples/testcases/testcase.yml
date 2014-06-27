@@ -5,11 +5,11 @@
         works correctly.
 
     Glossary:
-        - LoginLink: "#gb_70"
-        - SearchBox: "[name='q']"
-        - SubmitButton: "[name='btnG']"
-        - ResultStats: "#resultStats"
-        - Andrew: "#andrew"
+        - LoginLink: id="gb_70"
+        - SearchBox: name=q
+        - SubmitButton: name=btnG
+        - ResultStats: id="resultStats"
+        - Andrew: id="andrew"
 
     Steps:
         - Step 1:
@@ -21,5 +21,5 @@
             - Click [SubmitButton]
             - Wait 0.5 seconds
             - Expect Page Title is "Testing - Google Search"
-            - Expect [ResultStats] contains "About .* results"
+            - Expect [ResultStats] contains "results"
             - Expect [Andrew] to not exist

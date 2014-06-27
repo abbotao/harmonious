@@ -1,7 +1,9 @@
 import yaml
 
 from harmonious.core import TestPlan, Task, Step, TASK_REGISTRY 
+from harmonious.parsers import parse_variable
 import harmonious.selenium_steps
+
 
 def lower_keys(d):
     if isinstance(d, dict):
@@ -24,7 +26,7 @@ def parse_task_file(filename):
     if "glossary" in raw_file:
         for entry in raw_file["glossary"]:
             for k,v in entry.iteritems():
-                task.glossary.define_immutable(k,v)
+                task.glossary.define_immutable(k,parse_variable(v))
 
     for raw_step in raw_file["steps"]:
         step = Step(raw_step.keys()[0])
@@ -46,7 +48,7 @@ def parse_test_plan(filename):
         if "variables" in item:
             for entry in item["variables"]:
                 for k,v in entry.iteritems():
-                    testplan.variables[k] = v
+                    testplan.variables[k] = parse_variable(v)
         test_plans.append(testplan)
 
     return test_plans

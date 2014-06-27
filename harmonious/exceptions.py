@@ -6,3 +6,6 @@ class ImmutableAccessError(Exception):
 
 class StepReturnedFalseError(Exception):
     pass
+
+class DirectionUsesReservedWordError(Exception):
+    pass
