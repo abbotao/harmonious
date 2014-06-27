@@ -9,6 +9,7 @@
         - SearchBox: "[name='q']"
         - SubmitButton: "[name='btnG']"
         - ResultStats: "#resultStats"
+        - Andrew: "#andrew"
 
     Steps:
         - Step 1:
@@ -20,4 +21,5 @@
             - Click [SubmitButton]
             - Wait 0.5 seconds
             - Expect Page Title is "Testing - Google Search"
-            - Expect [ResultStats] contains "About (\d+,)+\d+ results"
+            - Expect [ResultStats] contains "About .* results"
+            - Expect [Andrew] to not exist

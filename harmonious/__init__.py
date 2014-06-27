@@ -23,7 +23,8 @@ def parse_task_file(filename):
             task.execute_prerequisites = raw_file["prerequisites"]["executeprerequisites"]
     if "glossary" in raw_file:
         for entry in raw_file["glossary"]:
-            task.glossary.update(entry)
+            for k,v in entry.iteritems():
+                task.glossary.define_immutable(k,v)
 
     for raw_step in raw_file["steps"]:
         step = Step(raw_step.keys()[0])
@@ -44,7 +45,8 @@ def parse_test_plan(filename):
         testplan.environment = item["environment"]
         if "variables" in item:
             for entry in item["variables"]:
-                testplan.variables.update(entry)
+                for k,v in entry.iteritems():
+                    testplan.variables[k] = v
         test_plans.append(testplan)
 
     return test_plans
