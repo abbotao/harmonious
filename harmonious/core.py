@@ -6,14 +6,15 @@ from harmonious.parsers import unquote_variable, is_substitution
 
 from harmonious.exceptions import ImmutableAccessError, StepReturnedFalseError, DirectionUsesReservedWordError
 
-ENVIRONMENT_MAPPING = { 
-    'ie': webdriver.Ie, 
-    'chrome': webdriver.Chrome, 
-    'firefox': webdriver.Firefox,
-    'safari': webdriver.Safari,
-    'opera': webdriver.Opera,
-    'phantom': webdriver.PhantomJS
-}
+
+ENVIRONMENT_MAPPING = {'ie': webdriver.Ie,
+                       'chrome': webdriver.Chrome,
+                       'firefox': webdriver.Firefox,
+                       'safari': webdriver.Safari,
+                       'opera': webdriver.Opera,
+                       'phantom': webdriver.PhantomJS
+                       }
+
 
 class Variables(object):
     def __init__(self):
@@ -54,8 +55,8 @@ class Variables(object):
         if key in self.mutable:
             return self.mutable[key]
         else:
-            #This will raise an error if the item isn't here...
-            return self.immutable[key] 
+            # This will raise an error if the item isn't here...
+            return self.immutable[key]
 
     def __setitem__(self, key, value):
         if key in self.immutable:
@@ -75,6 +76,7 @@ class Variables(object):
         if key in self.mutable:
             del self.mutable[key]
         self.immutable[key] = value
+
 
 class NestedScope(object):
     def __init__(self, global_scope):
@@ -106,11 +108,12 @@ class NestedScope(object):
                 scope[name] = value
                 return
 
+
 class TestPlan(object):
     def __init__(self, name):
-        self.name = None
+        self.name = name
         self.tasks = None
-        self.environment = None #TODO: we should allow more details here than just browser named...
+        self.environment = None
         self.variables = Variables()
 
     def dependency_order(self):
@@ -140,6 +143,7 @@ class TestPlan(object):
             TASK_REGISTRY[task].run(browser, scope)
             browser.close()
 
+
 class Task(object):
     def __init__(self, name, description=None):
         self.name = name
@@ -156,6 +160,7 @@ class Task(object):
             step.run(browser, scope)
         scope.pop_scope()
 
+
 class Step(object):
     def __init__(self, name):
         self.name = name
@@ -163,20 +168,20 @@ class Step(object):
 
     def run(self, browser, glossary):
         for direction in self.directions:
-            print "  -",direction,
+            print "  -", direction,
             for (regexp, func) in DIRECTIVE_REGISTRY.iteritems():
                 match = regexp.search(direction)
                 if match:
-                    #Remove quotes around strings as needed,
-                    #and substitute variables
+                    # Remove quotes around strings as needed,
+                    # and substitute variables
                     kwargs = match.groupdict()
                     for (key, value) in kwargs.iteritems():
-                            unquoted = unquote_variable(value)
-                            if is_substitution(value):
-                                kwargs[key] = glossary[unquoted]
-                            else:
-                                kwargs[key] = unquoted
-                    #browser is used internally, so let's throw a fit if we already have one
+                        unquoted = unquote_variable(value)
+                        if is_substitution(value):
+                            kwargs[key] = glossary[unquoted]
+                        else:
+                            kwargs[key] = unquoted
+                    # browser is used internally, so let's throw a fit if we already have one
                     if "browser" in kwargs:
                         raise DirectionUsesReservedWordError("Direction uses 'browser' which is reserved.")
 
@@ -185,7 +190,7 @@ class Step(object):
                         result = func(**kwargs)
                         if result is not None and not result:
                             raise StepReturnedFalseError()
-                    except:
+                    except Exception as ex:
                         print "... FAIL",
                     finally:
                         print ""

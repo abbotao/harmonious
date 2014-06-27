@@ -1,14 +1,15 @@
 import yaml
 
-from harmonious.core import TestPlan, Task, Step, TASK_REGISTRY 
+from harmonious.core import TestPlan, Task, Step, TASK_REGISTRY
 from harmonious.parsers import parse_variable
 import harmonious.selenium_directives
 
 
-def lower_keys(d):
-    if isinstance(d, dict):
-        return dict((k.lower(), lower_keys(v)) for k,v in d.iteritems())
-    return d
+def lower_keys(dictionary):
+    if isinstance(dictionary, dict):
+        return dict((key.lower(), lower_keys(value)) for key, value in dictionary.iteritems())
+    return dictionary
+
 
 def parse_task_file(filename):
     filehandle = open(filename)
@@ -25,8 +26,8 @@ def parse_task_file(filename):
             task.execute_prerequisites = raw_file["prerequisites"]["executeprerequisites"]
     if "glossary" in raw_file:
         for entry in raw_file["glossary"]:
-            for k,v in entry.iteritems():
-                task.glossary.define_immutable(k,parse_variable(v))
+            for key, value in entry.iteritems():
+                task.glossary.define_immutable(key, parse_variable(value))
 
     for raw_step in raw_file["steps"]:
         step = Step(raw_step.keys()[0])
@@ -35,6 +36,7 @@ def parse_task_file(filename):
         task.steps.append(step)
 
     return task
+
 
 def parse_test_plan(filename):
     filehandle = open(filename)
@@ -47,15 +49,16 @@ def parse_test_plan(filename):
         testplan.environment = item["environment"]
         if "variables" in item:
             for entry in item["variables"]:
-                for k,v in entry.iteritems():
-                    testplan.variables[k] = parse_variable(v)
+                for key, value in entry.iteritems():
+                    testplan.variables[key] = parse_variable(value)
         test_plans.append(testplan)
 
     return test_plans
 
+
 def run(test_plan_files, task_files):
     test_plans = []
-    for filename in  test_plan_files:
+    for filename in test_plan_files:
         test_plans.extend(parse_test_plan(filename))
 
     for filename in task_files:

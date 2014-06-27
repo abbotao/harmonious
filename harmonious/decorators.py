@@ -1,7 +1,6 @@
-from functools import wraps
-
 from harmonious.core import DIRECTIVE_REGISTRY
 from harmonious.exceptions import ExpectedThrownException
+
 
 def directive(regexp, throws=None):
     def _step(func):
@@ -18,9 +17,8 @@ def directive(regexp, throws=None):
             else:
                 return func(*args, **kwargs)
 
-        #Add the wrapped function to the registry
+        # Add the wrapped function to the registry
         DIRECTIVE_REGISTRY.add_directive(regexp, wrapper)
         return wrapper
 
     return _step
-
