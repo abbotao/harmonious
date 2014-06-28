@@ -159,6 +159,7 @@ class TestPlan(object):
             CALLBACK_REGISTRY.run_all(type="task", callback="after", task=task, result=results[task_name])
             CALLBACK_REGISTRY.run_all(type="task", callback="after_output", task=task, result=results[task_name])
             browser.close()
+        return results
 
 
 class Task(object):
@@ -180,6 +181,7 @@ class Task(object):
             CALLBACK_REGISTRY.run_all(type="step", callback="after", step=step, result=results[step.name])
             CALLBACK_REGISTRY.run_all(type="step", callback="after_output", step=step, result=results[step.name])
         scope.pop_scope()
+        return results
 
 
 class Step(object):
@@ -195,6 +197,7 @@ class Step(object):
             results[directive.string] = directive.run(browser, variables)
             CALLBACK_REGISTRY.run_all(type="directive", callback="after", directive=directive, result=results[directive.string])
             CALLBACK_REGISTRY.run_all(type="directive", callback="after_output", directive=directive, result=results[directive.string])
+        return results
 
 class Directive(object):
     def __init__(self, string):
@@ -226,3 +229,4 @@ class Directive(object):
                         results.exception = StepReturnedFalseError()
                 except Exception as ex:
                     results.exception = ex
+                return results

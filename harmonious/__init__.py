@@ -2,7 +2,8 @@ import yaml
 
 from harmonious.core import TestPlan, Task, Step, Directive, TASK_REGISTRY, CALLBACK_REGISTRY
 from harmonious.parsers import parse_variable
-import harmonious.selenium_directives
+
+import harmonious.selenium_directives, harmonious.output.console
 
 
 def lower_keys(dictionary):

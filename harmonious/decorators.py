@@ -26,87 +26,105 @@ def directive(regexp, throws=None):
 
 class Before(object):
     class Output(object):
+        @staticmethod
         def all(func):
-            CALLBACK_REGISTRY['all']['before_output'] = func
+            CALLBACK_REGISTRY['all']['before_output'].append(func)
             return func
 
+        @staticmethod
         def testplan(func):
-            CALLBACK_REGISTRY['testplan']['before_output'] = func
+            CALLBACK_REGISTRY['testplan']['before_output'].append(func)
             return func
 
+        @staticmethod
         def task(func):
-            CALLBACK_REGISTRY['task']['before_output'] = func
+            CALLBACK_REGISTRY['task']['before_output'].append(func)
             return func
 
+        @staticmethod
         def step(func):
-            CALLBACK_REGISTRY['step']['before_output'] = func
+            CALLBACK_REGISTRY['step']['before_output'].append(func)
             return func
 
+        @staticmethod
         def directive(func):
-            CALLBACK_REGISTRY['directive']['before_output'] = func
+            CALLBACK_REGISTRY['directive']['before_output'].append(func)
             return func
 
-
+    @staticmethod
     def all(func):
-        CALLBACK_REGISTRY['all']['before'] = func
+        CALLBACK_REGISTRY['all']['before'].append(func)
         return func
 
+    @staticmethod
     def testplan(func):
-        CALLBACK_REGISTRY['testplan']['before'] = func
+        CALLBACK_REGISTRY['testplan']['before'].append(func)
         return func
 
+    @staticmethod
     def task(func):
-        CALLBACK_REGISTRY['task']['before'] = func
+        CALLBACK_REGISTRY['task']['before'].append(func)
         return func
 
+    @staticmethod
     def step(func):
-        CALLBACK_REGISTRY['step']['before'] = func
+        CALLBACK_REGISTRY['step']['before'].append(func)
         return func
 
+    @staticmethod
     def directive(func):
-        CALLBACK_REGISTRY['directive']['before'] = func
+        CALLBACK_REGISTRY['directive']['before'].append(func)
         return func
 
 
 class After(object):
-    class AfterOutput(object):
+    class Output(object):
+        @staticmethod
         def all(func):
-            CALLBACK_REGISTRY['all']['after_output'] = func
+            CALLBACK_REGISTRY['all']['after_output'].append(func)
             return func
 
+        @staticmethod
         def testplan(func):
-            CALLBACK_REGISTRY['testplan']['after_output'] = func
+            CALLBACK_REGISTRY['testplan']['after_output'].append(func)
             return func
 
+        @staticmethod
         def task(func):
-            CALLBACK_REGISTRY['task']['after_output'] = func
+            CALLBACK_REGISTRY['task']['after_output'].append(func)
             return func
 
+        @staticmethod
         def step(func):
-            CALLBACK_REGISTRY['step']['after_output'] = func
+            CALLBACK_REGISTRY['step']['after_output'].append(func)
             return func
 
+        @staticmethod
         def directive(func):
-            CALLBACK_REGISTRY['directive']['after_output'] = func
+            CALLBACK_REGISTRY['directive']['after_output'].append(func)
             return func
 
-
+    @staticmethod
     def all(func):
-        CALLBACK_REGISTRY['all']['after'] = func
+        CALLBACK_REGISTRY['all']['after'].append(func)
         return func
 
+    @staticmethod
     def testplan(func):
-        CALLBACK_REGISTRY['testplan']['after'] = func
+        CALLBACK_REGISTRY['testplan']['after'].append(func)
         return func
 
+    @staticmethod
     def task(func):
-        CALLBACK_REGISTRY['task']['after'] = func
+        CALLBACK_REGISTRY['task']['after'].append(func)
         return func
 
+    @staticmethod
     def step(func):
-        CALLBACK_REGISTRY['step']['after'] = func
+        CALLBACK_REGISTRY['step']['after'].append(func)
         return func
 
+    @staticmethod
     def directive(func):
-        CALLBACK_REGISTRY['directive']['after'] = func
+        CALLBACK_REGISTRY['directive']['after'].append(func)
         return func
