@@ -1,13 +1,14 @@
 from collections import defaultdict
 from selenium import webdriver
 
-from harmonious.registries import DIRECTIVE_REGISTRY, TASK_REGISTRY
+from harmonious.registries import DIRECTIVE_REGISTRY, TASK_REGISTRY, CALLBACK_REGISTRY
 from harmonious.parsers import unquote_variable, is_substitution
 
 from harmonious.exceptions import ImmutableAccessError, StepReturnedFalseError, DirectionUsesReservedWordError
 
 
-ENVIRONMENT_MAPPING = {'ie': webdriver.Ie,
+ENVIRONMENT_MAPPING = {
+                       'ie': webdriver.Ie,
                        'chrome': webdriver.Chrome,
                        'firefox': webdriver.Firefox,
                        'safari': webdriver.Safari,
@@ -108,6 +109,10 @@ class NestedScope(object):
                 scope[name] = value
                 return
 
+class Result(dict):
+    def __init__(self, name):
+        self.name = name
+        self.exception = None
 
 class TestPlan(object):
     def __init__(self, name):
@@ -135,12 +140,24 @@ class TestPlan(object):
                     dependent_list.extend(dependents[current])
 
     def run(self):
-        for task in self.dependency_order():
+        results = Result(self.name)
+        for task_name in self.dependency_order():
             scope = NestedScope(self.variables)
             browser = ENVIRONMENT_MAPPING[self.environment.lower()]()
-            for prereq in TASK_REGISTRY[task].execute_prerequisites:
-                TASK_REGISTRY[prereq].run(browser, scope)
-            TASK_REGISTRY[task].run(browser, scope)
+            task = TASK_REGISTRY[task_name] 
+            for prereq_name in task.execute_prerequisites:
+                prereq = TASK_REGISTRY[prereq_name]
+                CALLBACK_REGISTRY.run_all(type="task", callback="before", task=prereq)
+                CALLBACK_REGISTRY.run_all(type="task", callback="before_output", task=prereq)
+                results[prereq.name] = prereq.run(browser, scope)
+                CALLBACK_REGISTRY.run_all(type="task", callback="after", task=prereq, result=results[prereq.name])
+                CALLBACK_REGISTRY.run_all(type="task", callback="after_output", task=prereq, result=results[prereq.name])
+
+            CALLBACK_REGISTRY.run_all(type="task", callback="before", task=task)
+            CALLBACK_REGISTRY.run_all(type="task", callback="before_output", task=task)
+            results[task_name] = task.run(browser, scope)
+            CALLBACK_REGISTRY.run_all(type="task", callback="after", task=task, result=results[task_name])
+            CALLBACK_REGISTRY.run_all(type="task", callback="after_output", task=task, result=results[task_name])
             browser.close()
 
 
@@ -150,14 +167,18 @@ class Task(object):
         self.description = description
         self.setup_tasks = list()
         self.execute_prerequisites = list()
-        self.glossary = Variables()
+        self.variables = Variables()
         self.steps = list()
 
     def run(self, browser, scope):
-        scope.push_scope(self.glossary)
+        results = Result(self.name)
+        scope.push_scope(self.variables)
         for step in self.steps:
-            print "[ %s | %s ]" % (self.name, step.name)
-            step.run(browser, scope)
+            CALLBACK_REGISTRY.run_all(type="step", callback="before", step=step)
+            CALLBACK_REGISTRY.run_all(type="step", callback="before_output", step=step)
+            results[step.name] = step.run(browser, scope)
+            CALLBACK_REGISTRY.run_all(type="step", callback="after", step=step, result=results[step.name])
+            CALLBACK_REGISTRY.run_all(type="step", callback="after_output", step=step, result=results[step.name])
         scope.pop_scope()
 
 
@@ -166,31 +187,42 @@ class Step(object):
         self.name = name
         self.directions = list()
 
-    def run(self, browser, glossary):
-        for direction in self.directions:
-            print "  -", direction,
-            for (regexp, func) in DIRECTIVE_REGISTRY.iteritems():
-                match = regexp.search(direction)
-                if match:
-                    # Remove quotes around strings as needed,
-                    # and substitute variables
-                    kwargs = match.groupdict()
-                    for (key, value) in kwargs.iteritems():
-                        unquoted = unquote_variable(value)
-                        if is_substitution(value):
-                            kwargs[key] = glossary[unquoted]
-                        else:
-                            kwargs[key] = unquoted
-                    # browser is used internally, so let's throw a fit if we already have one
-                    if "browser" in kwargs:
-                        raise DirectionUsesReservedWordError("Direction uses 'browser' which is reserved.")
+    def run(self, browser, variables):
+        results = Result(self.name)
+        for directive in self.directions:
+            CALLBACK_REGISTRY.run_all(type="directive", callback="before", directive=directive)
+            CALLBACK_REGISTRY.run_all(type="directive", callback="before_output", directive=directive)
+            results[directive.string] = directive.run(browser, variables)
+            CALLBACK_REGISTRY.run_all(type="directive", callback="after", directive=directive, result=results[directive.string])
+            CALLBACK_REGISTRY.run_all(type="directive", callback="after_output", directive=directive, result=results[directive.string])
 
-                    kwargs["browser"] = browser
-                    try:
-                        result = func(**kwargs)
-                        if result is not None and not result:
-                            raise StepReturnedFalseError()
-                    except Exception as ex:
-                        print "... FAIL",
-                    finally:
-                        print ""
+class Directive(object):
+    def __init__(self, string):
+        self.string = string
+
+    def run(self, browser, variables):
+        results = Result(self.string)
+        for (regexp, func) in DIRECTIVE_REGISTRY.iteritems():
+            match = regexp.search(self.string)
+            if match:
+                # Remove quotes around strings as needed,
+                # and substitute variables
+                kwargs = match.groupdict()
+                for (key, value) in kwargs.iteritems():
+                    unquoted = unquote_variable(value)
+                    if is_substitution(value):
+                        kwargs[key] = variables[unquoted]
+                    else:
+                        kwargs[key] = unquoted
+
+                # browser is used internally, so let's throw a fit if we already have one
+                if "browser" in kwargs:
+                    raise DirectionUsesReservedWordError("Direction uses 'browser' which is reserved.")
+
+                kwargs["browser"] = browser
+                try:
+                    result = func(**kwargs)
+                    if result is not None and not result:
+                        results.exception = StepReturnedFalseError()
+                except Exception as ex:
+                    results.exception = ex
