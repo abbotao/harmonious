@@ -60,6 +60,14 @@ def type_into_element(browser, elem, keys):
 def click_element(browser, elem):
     find_element(browser, elem).click()
 
+
+@directive(r'Follow link (?P<elem>.+)')
+def follow_link(browser, elem):
+    element = find_element(browser, elem)
+    destination = element.get_attribute("href")
+    browser.get(destination)
+
+
 @directive(r'Wait (?P<seconds>\d+(\.\d+)?) seconds')
 def wait(browser, seconds):
     start = time.time()
@@ -80,6 +88,37 @@ def uncheck_checkbox(browser, elem):
     element = find_element(browser, elem)
     if element.is_selected():
         element.click()
+
+@directive('Select [(?P<list>.+)] from (?P<elem>.+)')
+def select_multi_items(browser, list, elem):
+        options = list.split(",")
+        select_box = find_element(browser, elem)
+
+        select = Select(select_box)
+        select.deselect_all()
+
+        for option in options:
+            try:
+                select.select_by_value(option)
+            except NoSuchElementException:
+                select.select_by_visible_text(option)
+
+@directive('Select "(?P<value>.*?)" from (?P<select>.*?)')
+def select_single_item(step, select, value):
+    option = None
+    try:
+        option = find_element(browser, "select[name='%s'] > option[value='%s']" % (select, value))
+    except NoSuchElementException:
+        option = find_element(browser, "select[id='%s'] > option[value='%s']" % (select, value))
+
+    option.click()
+
+
+@directive('Choose radio with value "(?P<value>.+)"$')
+def choose_radio(browser, value):
+    radio = find_elem(browser, ('css selector', 'input[type="radio"][value="%s"]' % value))
+    radio.click()
+
 
 #expect statements
 @directive(r'expect to see content (?P<content>.+)')
@@ -120,6 +159,14 @@ def expect_elem_match_regexp(browser, elem, regexp):
 def expect_elem_match_regexp_within(browser, elem, regexp, seconds):
     return wait_for_result(expect_elem_match_regexp, [browser, elem, regexp], seconds)
 
+@directive(r'Expect (?P<elem>.+) does not contain "(?P<regexp>.+)"')
+def expect_elem_should_not_match_regexp(browser, elem, regexp):
+    assert re.search(regexp, find_element(browser, elem).text) is None, "Value was in element."
+
+@directive(r'Expect (?P<elem>.+) does not contain "(?P<regexp>.+) within (?P<seconds>\d+(\.\d+)?) seconds')
+def expect_elem_should_not_match_regexp_within(browser, elem, regexp, seconds):
+    return wait_for_result(expect_elem_should_not_match_regexp, [browser, regexp, elem], seconds)
+
 
 @directive(r'Expect (?P<elem>.+) to not exist', throws=NoSuchElementException)
 def expect_not_exist(browser, elem):
@@ -135,48 +182,19 @@ def expect_not_exist_within(browser, elem, seconds):
 def expect_checkbox_selected(browser, elem):
     assert find_element(browser, elem).is_selected(), "Element is not selected"
 
-@directive(r'Expect (?P<elem>.+) is selected within (?P<seconds>\d+(\.\d+)?) seconds')
-def expect_checkbox_selected_within(browser, elem, seconds):
-    return wait_for_result(expect_checkbox_selected, [browser, elem], seconds)
-
 @directive(r'Expect (?P<elem>.+) is not selected')
 def expect_checkbox_not_selected(browser, elem):
     assert not find_element(browser, elem).is_selected(), "Element is not selected"
-
-@directive(r'Expect (?P<elem>.+) is not selected within (?P<seconds>\d+(\.\d+)?) seconds')
-def expect_checkbox_not_selected_within(browser, elem, seconds):
-    return wait_for_result(expect_checkbox_not_selected, [browser, elem], seconds)
-
-@directive(r'Follow link (?P<elem>.+)')
-def follow_link(browser, elem):
-    element = find_element(browser, elem)
-    destination = element.get_attribute("href")
-    browser.get(destination)
-
 
 @directive(r'Expect link with url "(?P<url>.+)"')
 def expect_link_with_url(browser, url):
     assert browser.find_element_by_xpath(str('//a[@href="%s"]' % url)) is not None, "No link found"
 
-@directive(r'Expect link with url "(?P<url>.+) within (?P<seconds>\d+(\.\d+)?) seconds')
-def expect_link_with_url_within(browser, url, seconds):
-    return wait_for_result(expect_link_with_url, [browser, url], seconds)
 
 @directive(r'Expect link with url "(?P<url>.+)" that contains text "(?P<text>.+)"')
 def expect_link_with_url_and_text(browser, url, text):
     assert browser.find_element_by_xpath(str('//a[@href="%s"][contains(., %s)]' % (url, text))) is not None, "No link found"
 
-@directive(r'Expect link with url "(?P<url>.+)" that contains text "(?P<text>.+) within (?P<seconds>\d+(\.\d+)?) seconds')
-def expect_link_with_url_and_text_within(browser, url, text, seconds):
-    return wait_for_result(expect_link_with_url_and_text, [browser, url, text], seconds)
-
-@directive(r'Expect (?P<elem>.+) does not contain "(?P<regexp>.+)"')
-def expect_elem_should_not_match_regexp(browser, elem, regexp):
-    assert re.search(regexp, find_element(browser, elem).text) is None, "Value was in element."
-
-@directive(r'Expect (?P<elem>.+) does not contain "(?P<regexp>.+) within (?P<seconds>\d+(\.\d+)?) seconds')
-def expect_elem_should_not_match_regexp_within(browser, elem, regexp, seconds):
-    return wait_for_result(expect_elem_should_not_match_regexp, [browser, regexp, elem], seconds)
 
 @directive(r'Expect url to be "(?P<url>.+)"')
 def expect_browser_url_to_be(browser, url):
@@ -198,13 +216,13 @@ def expect_browser_url_to_contain_within(browser, url, seconds):
     return wait_for_result(expect_browser_url_to_contain, [browser, url], seconds)
 
 
-@directive(r'Expect (?P<elem>.+) to have a value of "(?P<value>.+)"')
+@directive(r'Expect (?P<elem>.+) to have a value equal to "(?P<value>.+)"')
 def expect_element_to_have_value(browser, elem, value):
     element = find_element(browser, elem)
     assert element.get_attribute("value") == value, "Value was %s " % element.get_attribute("value")
 
 
-@directive(r'Expect (?P<elem>.+) to have a value of "(?P<value>.+)" within (?P<seconds>\d+(\.\d+)?) seconds')
+@directive(r'Expect (?P<elem>.+) to have a value equal to "(?P<value>.+)" within (?P<seconds>\d+(\.\d+)?) seconds')
 def expect_element_to_have_value_within(browser, elem, value, seconds):
     return wait_for_result(expect_element_to_have_value, [browser, elem, value], seconds)
 
@@ -218,6 +236,60 @@ def expect_element_to_contain_value(browser, elem, regexp):
 @directive(r'Expect (?P<elem>.+) to contain a value of "(?P<regexp>.+)" within (?P<seconds>\d+(\.\d+)?) seconds')
 def expect_element_to_contain_value_within(browser, elem, regexp, seconds):
     return wait_for_result(expect_element_to_contain_value, [browser, elem, regexp], seconds)
+
+
+@directive('expect "(?P<value>.*?)" from (?P<select>.*?) should be selected')
+def assert_single_selected(browser, option_name, select_name):
+    option = None
+    try:
+        option = find_element(browser, "select[name='%s'] > option[value='%s']" % (select, value))
+    except NoSuchElementException:
+        option = find_element(browser, "select[id='%s'] > option[value='%s']" % (select, value))
+    
+    assert option.is_selected(), "Option was not selected"
+
+@directive(r'expect \[(?P<list>.+)\] from (?P<select>.+) should be selected')
+def assert_multi_selected(browser, select, list):
+        options = list.split(',')
+        select_box = find_element(browser, select)
+        option_elems = select_box.find_elements_by_xpath(str('./option'))
+        for option in option_elems:
+            if option.get_attribute('id') in options or \
+               option.get_attribute('name') in options or \
+               option.get_attribute('value') in options or \
+               option.text in options:
+                assert option.is_selected(), "Option %s was not selected" % option
+            else:
+                assert not option.is_selected(), "Option %s was selected" % option
+
+
+@directive(r'Expect option "(?P<value>.+)" in selector (?P<select>.+)')
+def select_contains(browser, select, value):
+    try:
+        option = find_element(browser, "select[name='%s'] > option[value='%s']" % (select, value))
+    except NoSuchElementException:
+        option = find_element(browser, "select[id='%s'] > option[value='%s']" % (select, value))
+    assert option is not None, "Could not find option"
+
+@directive(r'Expect option "(?P<value>.+)" not in selector (?P<select>.+)', throws=NoSuchElementException)
+def select_does_not_contain(browser, select, value):
+    try:
+        option = find_element(browser, "select[name='%s'] > option[value='%s']" % (select, value))
+    except NoSuchElementException:
+        option = find_element(browser, "select[id='%s'] > option[value='%s']" % (select, value))
+    assert option is None, "Found option"
+
+
+@directive('Expect "(?P<value>.+)" radio should be selected')
+def assert_radio_selected(browser, value):
+    radio = find_element(browser, ('css_selector', 'input[type="radio"][value="%s"]' % value))
+    assert radio.is_selected(), "Radio not selected"
+
+
+@directive('Expect "(?P<value>.+)" radio should not be selected')
+def assert_radio_not_selected(browser, value):
+    radio = find_element(browser, ('css_selector', 'input[type="radio"][value="%s"]' % value))
+    assert not radio.is_selected(), "Radio is selected"
 
 
 @directive('Accept the alert')
