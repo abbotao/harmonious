@@ -1,3 +1,8 @@
+""" Main module for harmonious executable script
+
+Executes harmonious test cases given commandline arguments.
+
+"""
 import os
 import glob
 import argparse
@@ -8,6 +13,11 @@ from harmonious.core import TASK_REGISTRY
 from harmonious.parsers import parse_test_plan, parse_task_file
 
 def main():
+    """
+    Executes harmonious test cases. Uses argparse, loads the environment script
+    for a given folder by filename (to allow loading of callbacks and additional directives),
+    and runs the test cases found.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="Path to test plans to run")
 
@@ -28,3 +38,6 @@ def main():
         TASK_REGISTRY[task.name] = task
 
     Runner.run(test_plans)
+
+if __name__ == "__main__":
+    main()

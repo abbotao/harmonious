@@ -2,6 +2,9 @@ import re
 import time
 
 from harmonious.decorators import directive, expression
+from harmonious.utils import unquote_variable
+
+from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.alert import Alert
 from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException, WebDriverException, StaleElementReferenceException
 
@@ -55,8 +58,8 @@ def type_into_element(browser, elem, keys):
     find_element(browser, elem).send_keys(keys)
 
 
-@expression(r'click (?P<elem>.+)')
-@directive(r'press (?P<elem>.+)')
+@expression(r'press (?P<elem>.+)')
+@directive(r'click (?P<elem>.+)')
 def click_element(browser, elem):
     find_element(browser, elem).click()
 
@@ -89,9 +92,9 @@ def uncheck_checkbox(browser, elem):
     if element.is_selected():
         element.click()
 
-@directive('Select [(?P<list>.+)] from (?P<elem>.+)')
+@directive('Select \[(?P<list>.+)\] from (?P<elem>.+)')
 def select_multi_items(browser, list, elem):
-        options = list.split(",")
+        options = [unquote_variable(i.strip()) for i in list.split(",")]
         select_box = find_element(browser, elem)
 
         select = Select(select_box)
@@ -104,19 +107,19 @@ def select_multi_items(browser, list, elem):
                 select.select_by_visible_text(option)
 
 @directive('Select "(?P<value>.*?)" from (?P<select>.*?)')
-def select_single_item(step, select, value):
+def select_single_item(browser, select, value):
     option = None
     try:
-        option = find_element(browser, "select[name='%s'] > option[value='%s']" % (select, value))
+        option = find_element(browser, "%s> option[value='%s']" % (select, value))
     except NoSuchElementException:
-        option = find_element(browser, "select[id='%s'] > option[value='%s']" % (select, value))
+        option = find_element(browser,  "%s> option[value='%s']" % (select, value))
 
     option.click()
 
 
-@directive('Choose radio with value "(?P<value>.+)"$')
+@directive('Choose radio with value "(?P<value>.+)"')
 def choose_radio(browser, value):
-    radio = find_elem(browser, ('css selector', 'input[type="radio"][value="%s"]' % value))
+    radio = find_element(browser, ('css selector', 'input[type="radio"][value="%s"]' % value))
     radio.click()
 
 
@@ -239,7 +242,7 @@ def expect_element_to_contain_value_within(browser, elem, regexp, seconds):
 
 
 @directive('expect "(?P<value>.*?)" from (?P<select>.*?) should be selected')
-def assert_single_selected(browser, option_name, select_name):
+def assert_single_selected(browser, select, value):
     option = None
     try:
         option = find_element(browser, "select[name='%s'] > option[value='%s']" % (select, value))
