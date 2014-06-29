@@ -3,8 +3,12 @@ import glob
 import argparse
 import imp
 
-import harmonious
+from harmonious import Runner, TASK_REGISTRY
 
+def lower_keys(dictionary):
+    if isinstance(dictionary, dict):
+        return dict((key.lower(), lower_keys(value)) for key, value in dictionary.iteritems())
+    return dictionary
 
 def main():
     parser = argparse.ArgumentParser()
@@ -15,4 +19,15 @@ def main():
     if os.path.exists("%s/environment.py"  % args.path):
         imp.load_source("environment", "%s/environment.py" % args.path)
 
-    harmonious.run(glob.glob("%s/*.yml" % args.path), glob.glob("%s/testcases/*.yml" % args.path))
+    test_plan_files = glob.glob("%s/*.yml" % args.path)
+
+    test_plans = []
+    for filename in test_plan_files:
+        test_plans.extend(parse_test_plan(filename))
+
+    task_files = glob.glob("%s/testcases/*.yml" % args.path)
+    for filename in task_files:
+        task = parse_task_file(filename)
+        TASK_REGISTRY[task.name] = task
+
+    Runner.run(test_plans)
