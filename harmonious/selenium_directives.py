@@ -19,7 +19,7 @@ def load_url(browser, url):
 
 @directive(r'expect exists (?P<elem>.+)')
 def expect_exists(browser, elem):
-    assert find_element(browser, elem) is not None
+    assert find_element(browser, elem) is not None, "Element exists"
 
 
 @directive(r'type "(?P<keys>.+)" into (?P<elem>.+)')
@@ -34,12 +34,12 @@ def click_element(browser, elem):
 
 @directive(r'Expect Page Title is "(?P<title>.+)"')
 def expect_page_title(browser, title):
-    assert browser.title == title
+    assert browser.title == title, "Title was '%s'" % browser.title
 
 
 @directive(r'Expect (?P<elem>.+) contains "(?P<regexp>.+)"')
 def expect_elem_match_regexp(browser, elem, regexp):
-    assert re.search(regexp, find_element(browser, elem).text) is not None
+    assert re.search(regexp, find_element(browser, elem).text) is not None, "Could not find value in element"
 
 
 @directive(r'Wait (?P<seconds>\d+(\.\d+)?) seconds')

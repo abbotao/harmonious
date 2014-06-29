@@ -3,12 +3,9 @@ import glob
 import argparse
 import imp
 
-from harmonious import Runner, TASK_REGISTRY
-
-def lower_keys(dictionary):
-    if isinstance(dictionary, dict):
-        return dict((key.lower(), lower_keys(value)) for key, value in dictionary.iteritems())
-    return dictionary
+from harmonious import Runner
+from harmonious.core import TASK_REGISTRY
+from harmonious.parsers import parse_test_plan, parse_task_file
 
 def main():
     parser = argparse.ArgumentParser()

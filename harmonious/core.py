@@ -2,7 +2,7 @@ from collections import defaultdict
 from selenium import webdriver
 
 from harmonious.registries import DIRECTIVE_REGISTRY, TASK_REGISTRY, CALLBACK_REGISTRY
-from harmonious.parsers import unquote_variable, is_substitution
+from harmonious.utils import unquote_variable, is_substitution
 
 from harmonious.exceptions import ImmutableAccessError, StepReturnedFalseError, DirectionUsesReservedWordError
 

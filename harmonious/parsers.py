@@ -1,6 +1,12 @@
 import yaml
 
-from harmonious.core import TestPlan, Task, Step, Directive, TASK_REGISTRY
+from harmonious.utils import unquote_variable
+from harmonious.core import TestPlan, Task, Step, Directive
+
+def lower_keys(dictionary):
+    if isinstance(dictionary, dict):
+        return dict((key.lower(), lower_keys(value)) for key, value in dictionary.iteritems())
+    return dictionary
 
 def parse_variable(var):
     parts = var.split("=")
@@ -8,19 +14,6 @@ def parse_variable(var):
         return (parts[0], unquote_variable(parts[1]))
     else:
         return var
-
-
-def unquote_variable(name):
-    unquotable_chars = ["\"", "'", "[", "]"]
-    if name[0] in unquotable_chars and name[-1] in unquotable_chars:
-        return name[1:-1]
-    else:
-        return name
-
-
-def is_substitution(name):
-    return name[0] == "[" and name[-1] == "]"
-
 
 def parse_task_file(filename):
     filehandle = open(filename)

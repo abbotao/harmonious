@@ -1,4 +1,4 @@
-class ExpectedThrownException(Exception):
+class ExpectedThrownError(Exception):
     pass
 
 

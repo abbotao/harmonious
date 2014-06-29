@@ -1,5 +1,5 @@
 from harmonious.core import DIRECTIVE_REGISTRY, CALLBACK_REGISTRY
-from harmonious.exceptions import ExpectedThrownException
+from harmonious.exceptions import ExpectedThrownError
 
 
 def directive(regexp, throws=None):
@@ -13,7 +13,7 @@ def directive(regexp, throws=None):
                     thrown = True
                 finally:
                     if not thrown:
-                        raise ExpectedThrownException()
+                        raise ExpectedThrownError()
             else:
                 return func(*args, **kwargs)
 

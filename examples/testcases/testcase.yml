@@ -8,7 +8,7 @@
         - LoginLink: id="gb_70"
         - SearchBox: name=q
         - SubmitButton: name=btnG
-        - ResultStats: id="resultStats"
+        - ResultStats: id="resultStatss"
         - Andrew: id="andrew"
 
     Steps:
@@ -20,6 +20,6 @@
             - Type "Testing" into [SearchBox]
             - Click [SubmitButton]
             - Wait 1 seconds
-            - Expect Page Title is "Testing - Google Search"
+            - Expect Page Title is "Testing - Googgle Search"
             - Expect [ResultStats] contains "results"
-            - Expect [ResultStats] to not exist
+            - Expect [Andrew] to not exist
