@@ -1,7 +1,6 @@
 from harmonious.core import DIRECTIVE_REGISTRY, CALLBACK_REGISTRY
 from harmonious.exceptions import ExpectedThrownError
 
-
 def directive(regexp, throws=None):
     def _step(func):
         def wrapper(*args, **kwargs):
@@ -23,6 +22,12 @@ def directive(regexp, throws=None):
 
     return _step
 
+def expression(regexp):
+    def _exp(func):
+        DIRECTIVE_REGISTRY.add_directive(regexp, func)
+        return func
+
+    return _exp
 
 class Before(object):
     class Output(object):

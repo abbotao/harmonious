@@ -18,7 +18,7 @@
             - Expect Exists [SearchBox]
         - Step 2:
             - Type "Testing" into [SearchBox]
-            - Press [SubmitButton]
+            - Click [SubmitButton]
             - Wait 1 seconds
             - Expect Page Title is "Testing - Googgle Search"
             - Expect [ResultStats] contains "results"

@@ -1,0 +1,5 @@
+---
+- name: Run Tests in Firefox
+  environment: Firefox
+  tasks:
+    - TestGoogleFrontPage

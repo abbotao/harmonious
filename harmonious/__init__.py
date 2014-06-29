@@ -1,6 +1,6 @@
 from harmonious.core import CALLBACK_REGISTRY
 
-import harmonious.selenium_directives, harmonious.output.color_console
+import harmonious.directives.webdriver, harmonious.output.color_console
 
 class Runner(object):
     @staticmethod
