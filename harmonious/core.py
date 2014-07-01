@@ -208,13 +208,15 @@ class TestPlan(object):
             the dependencies listed in the tasks
             Yields: ::class::Task objects in order of dependencies
         """
-        dependents = defaultdict(list)
+        dependents = defaultdict(set)
         # If we build the dependencies in terms of tasks that depend
         # upon a task in question, we can BFS it to build an execution
         # order that executes things before something that depends on it
         # requires it.
-        for task in self.tasks.setup_tasks:
-            dependents[task].append(self)
+        for task in self.tasks:
+            for dependency in TASK_REGISTRY[task].setup_tasks: 
+                dependents[dependency].add(task)
+
 
         seen = defaultdict(lambda: False)
         for task in self.tasks:
