@@ -61,9 +61,9 @@ def translate_exception_to_reason(ex):
         return "Element to check was not found. (%s)" % ex.msg
 
     if type(ex) == AssertionError:
-        return "Expectation not met. (%s)" % str(ex)
+        return "Expectation not met. (%s)" % unicode(ex)
 
     if type(ex) == ExpectedThrownError:
         return "Expected an error, but didn't receive one."
 
-    return "Exception caught. (%s: %s)" % (type(ex), str(ex))
+    return "Exception caught. (%s: %s)" % (type(ex), unicode(ex))

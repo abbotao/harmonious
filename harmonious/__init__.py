@@ -1,6 +1,14 @@
+import platform
 from harmonious.core import CALLBACK_REGISTRY
 
-import harmonious.directives.webdriver, harmonious.output.color_console
+import harmonious.directives.webdriver
+
+# A hack for windows
+if platform.system() == 'Windows':
+    import harmonious.output.win32fix
+    import harmonious.output.console
+else:
+    import harmonious.output.color_console
 
 class Runner(object):
     @staticmethod
